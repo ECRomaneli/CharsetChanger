@@ -1,11 +1,11 @@
 <p align='center'>
-    <img src="https://i.postimg.cc/YCdRZS6J/logo.png" alt='logo' />
+    <img src="https://i.postimg.cc/q7Ln0qrn/logo.png" alt='logo' />
 </p>
 <p align='center'>
-    A lightweight framework that simulates a clock and allows you to use listeners
+    ...
 <p/>
 <p align='center'>
-    <img src="https://img.shields.io/npm/v/encoding-changer.svg" alt="module version">
+    <img src="https://img.shields.io/npm/v/charset-changer.svg" alt="module version">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="GitHub license">
     <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="contributions welcome">
 </p>
@@ -13,16 +13,16 @@
 ## Install
 
 ```
-npm i encoding-changer
+npm i charset-changer
 ```
 
 ## Using
 
 ### Import script
-To use encoding-changer, import script with this code:
+To use charset-changer, import script with this code:
 
 ```typescript
-const { encc } = require('encoding-changer')
+const { charsetChangerSync } = require('charset-changer')
 ```
 
 ## Working...
@@ -33,4 +33,4 @@ const { encc } = require('encoding-changer')
 
 ## License
 
-[MIT License](https://github.com/ECRomaneli/ClockJS/blob/master/LICENSE.md)
+[MIT License](https://github.com/ECRomaneli/Encoding-Changer/blob/master/LICENSE)

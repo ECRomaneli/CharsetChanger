@@ -1,22 +1,27 @@
 {
-  "name": "encoding-changer",
+  "name": "charset-changer",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/module/encodingChanger",
-  "typings": "dist/module/encodingChanger",
+  "main": "dist/module/charsetChanger",
+  "typings": "dist/module/charsetChanger",
   "scripts": {
-    "build": "sh build.sh",
+    "build": "sh build.sh module",
     "test": "node test/test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ECRomaneli/Encoding-Changer.git"
+    "url": "git+https://github.com/ECRomaneli/Charset-Changer.git"
+  },
+  "dependencies": {
+    "encoding": "^0.1.12",
+    "glob": "^7.1.6"
   },
   "devDependencies": {
-    "typescript": "^3.7.5",
-    "uglify-js": "^3.7.7"
+    "@types/node": "^13.7.0",
+    "typescript": "^3.7.5"
   },
   "keywords": [
+    "charset-changer",
     "encoding-changer",
     "encoding",
     "changer",
@@ -27,7 +32,7 @@
   "author": "ECRomaneli",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ECRomaneli/Encoding-Changer/issues"
+    "url": "https://github.com/ECRomaneli/Charset-Changer/issues"
   },
-  "homepage": "https://github.com/ECRomaneli/Encoding-Changer#readme"
+  "homepage": "https://github.com/ECRomaneli/Charset-Changer#readme"
 }
