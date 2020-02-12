@@ -1,6 +1,6 @@
 {
   "name": "charset-changer",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Change the charset for an entire folder recursively",
   "main": "dist/module/charsetChanger",
   "typings": "dist/module/charsetChanger",
