@@ -54,7 +54,7 @@ export namespace charsetChanger {
         private backupSuffix: string;
 
         private createBackup(path: FilePath, data: string): void {
-            if (!this.backup) { return; }
+            if (!this._createBackup) { return; }
             path += this.backupSuffix;
             fs.writeFileSync(path, data, { encoding: this._from });
         }

@@ -29,7 +29,7 @@ exports.charsetChangerSync = charsetChangerSync;
     })(Charset = charsetChanger.Charset || (charsetChanger.Charset = {}));
     class Class {
         createBackup(path, data) {
-            if (!this.backup) {
+            if (!this._createBackup) {
                 return;
             }
             path += this.backupSuffix;
