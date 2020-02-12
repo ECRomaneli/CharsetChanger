@@ -45,7 +45,7 @@ const { charsetChangerSync } = require('charset-changer')
     });
 ```
 
-See [the test folder](https://github.com/ECRomaneli/Charset-Changer/blob/master/test).
+See [the test folder](https://github.com/ECRomaneli/CharsetChanger/blob/master/test).
 
 ## Objectives to first stable version
 - Use `iconv` instead of `node-fs` to convert charcodes for more possibilities;
@@ -61,4 +61,4 @@ See [the test folder](https://github.com/ECRomaneli/Charset-Changer/blob/master/
 
 ## License
 
-[MIT License](https://github.com/ECRomaneli/Charset-Changer/blob/master/LICENSE)
+[MIT License](https://github.com/ECRomaneli/CharsetChanger/blob/master/LICENSE)

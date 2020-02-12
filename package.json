@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ECRomaneli/Charset-Changer.git"
+    "url": "git+https://github.com/ECRomaneli/CharsetChanger.git"
   },
   "dependencies": {
     "glob": "^7.1.6"
@@ -21,17 +21,19 @@
   },
   "keywords": [
     "charset-changer",
-    "encoding-changer",
+    "charsetChanger",
     "encoding",
     "changer",
     "charset",
     "utf-8",
-    "utf8"
+    "utf8",
+    "latin1",
+    "iso8859-1"
   ],
   "author": "ECRomaneli",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ECRomaneli/Charset-Changer/issues"
+    "url": "https://github.com/ECRomaneli/CharsetChanger/issues"
   },
-  "homepage": "https://github.com/ECRomaneli/Charset-Changer#readme"
+  "homepage": "https://github.com/ECRomaneli/CharsetChanger#readme"
 }
