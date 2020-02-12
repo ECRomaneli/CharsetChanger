@@ -3,27 +3,30 @@ const { charsetChangerSync } = require('../dist/module/charsetChanger');
 
 assert.doesNotThrow(() => {
     charsetChangerSync({
-        rootPath: 'test/output/',
+        root: 'test/output/',
         search: '**/iso*',
         from: 'latin1',
         to: 'utf8',
         backup: true,
         onList: (fileArr) => {
             console.log(fileArr);
-            return fileArr;
+        },
+        onBeforeConvert: (file) => {
+            console.log(file);
+            return true;
         }
     });
-    charsetChangerSync({
-        rootPath: 'test/output/',
-        search: '**/utf*',
-        from: 'utf8',
-        to: 'latin1',
-        backup: true,
-        onList: (fileArr) => {
-            console.log(fileArr);
-            return fileArr;
-        }
-    });
+    // charsetChangerSync({
+    //     rootPath: 'test/output/',
+    //     search: '**/utf*',
+    //     from: 'utf8',
+    //     to: 'latin1',
+    //     backup: true,
+    //     onList: (fileArr) => {
+    //         console.log(fileArr);
+    //         return fileArr;
+    //     }
+    // });
 }, 'Static changer');
 
 // assert.doesNotThrow(() => {
