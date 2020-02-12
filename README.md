@@ -2,7 +2,7 @@
     <img src="https://i.postimg.cc/q7Ln0qrn/logo.png" alt='logo' />
 </p>
 <p align='center'>
-    ...
+    Change the charset for an entire folder recursively
 <p/>
 <p align='center'>
     <img src="https://img.shields.io/npm/v/charset-changer.svg" alt="module version">
@@ -22,10 +22,38 @@ npm i charset-changer
 To use charset-changer, import script with this code:
 
 ```typescript
+const { charsetChanger } = require('charset-changer')
+```
+
+if you want to use sync convertion, use:
+
+```typescript
 const { charsetChangerSync } = require('charset-changer')
 ```
 
-## Working...
+## Example
+
+```typescript
+    charsetChangerSync({
+        root: './', // Root path
+        search: '**/latin1.txt', // Glob string
+        from: 'latin1', // Node FS pattern for ISO8859-1
+        to: 'utf8', // Node FS pattern
+        createBackup: true,
+        backupSuffix: '.backup',
+        onFinish: () => { console.log("latin1 to utf8"); }
+    });
+```
+
+See [the test folder](https://github.com/ECRomaneli/Encoding-Changer/blob/master/test).
+
+## Objectives to first stable version
+- Use `iconv` instead of `node-fs` to convert charcodes for more possibilities;
+- Do not convert files already in "to" charset;
+- Create an `electron` app to convert entire projects [separate project].
+
+## Doc in progress...
+
 
 ## Author
 
