@@ -1,5 +1,6 @@
 lib/
 dist/web/
+dist/logo/
 .circleci/
 
 build.sh
