@@ -219,16 +219,17 @@ export namespace charsetChanger {
         }
 
         public setConfig(config: Config): this {
-            return this .root(config.root || null)
-                        .search(config.search || '**/*')
-                        .ignore(config.ignore || null)
-                        .from(config.from || null)
-                        .to(config.to || null)
-                        .backup(config.backupSuffix, config.createBackup || !!config.backupSuffix)
-                        .onList(config.onList || Class.DEFAULT_LISTENER)
-                        .onBeforeConvert(config.onBeforeConvert || Class.DEFAULT_LISTENER)
-                        .onAfterConvert (config.onAfterConvert || Class.DEFAULT_LISTENER)
-                        .onFinish(config.onFinish || Class.DEFAULT_LISTENER);
+            return this 
+                .root(config.root || null)
+                .search(config.search || '**/*')
+                .ignore(config.ignore || null)
+                .from(config.from || null)
+                .to(config.to || null)
+                .backup(config.backupSuffix, config.createBackup || !!config.backupSuffix)
+                .onList(config.onList || Class.DEFAULT_LISTENER)
+                .onBeforeConvert(config.onBeforeConvert || Class.DEFAULT_LISTENER)
+                .onAfterConvert (config.onAfterConvert || Class.DEFAULT_LISTENER)
+                .onFinish(config.onFinish || Class.DEFAULT_LISTENER);
         }
     }
 

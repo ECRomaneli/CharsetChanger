@@ -178,7 +178,8 @@ var Charset;
             return this;
         }
         setConfig(config) {
-            return this.root(config.root || null)
+            return this
+                .root(config.root || null)
                 .search(config.search || '**/*')
                 .ignore(config.ignore || null)
                 .from(config.from || null)
