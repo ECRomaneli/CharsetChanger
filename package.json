@@ -13,7 +13,8 @@
     "url": "git+https://github.com/ECRomaneli/CharsetChanger.git"
   },
   "dependencies": {
-    "glob": "^7.1.6"
+    "glob": "^7.1.6",
+    "iconv-lite": "0.5.1"
   },
   "devDependencies": {
     "@types/node": "^13.7.0",

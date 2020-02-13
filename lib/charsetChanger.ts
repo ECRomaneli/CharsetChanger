@@ -1,9 +1,38 @@
+/**
+ * MODULE STATIC EXPORTS
+ */
+
 export function charsetChanger(config: charsetChanger.Config): Promise<boolean> {
     return charsetChanger.STATIC_INSTANCE.setConfig(config).convert();
 }
 
 export function charsetChangerSync(config: charsetChanger.Config): boolean {
     return charsetChanger.STATIC_INSTANCE.setConfig(config).convertSync();
+}
+
+/**
+ * MODULE CORE
+ */
+
+export enum Charset {
+    UCS2 = 'ucs2',
+    UTF7 = 'utf-7',
+    UTF7_IMAP = 'utf-7-imap',
+    UTF8 = 'utf8', 
+    UTF16 = 'utf16',
+    UTF16_LE = 'utf16-le',
+    UTF16_BE = 'utf16-le', 
+    UTF32 = 'utf32',
+    UTF32_LE = 'utf32-le',
+    UTF32_BE = 'utf32-le', 
+    ASCII = 'ascii', 
+    BINARY = 'binary', 
+    BASE64 = 'base64', 
+    HEX = 'hex',
+    WIN1252 = 'cp1252',
+    CP1252 = 'cp1252',
+    ISO8859_1 = 'iso8859-1',
+    LATIN1 = 'iso8859-1'
 }
 
 export namespace charsetChanger {
@@ -14,15 +43,9 @@ export namespace charsetChanger {
     
     type FilePath = string;
     type GlobString = string;
-    const { glob } = require('glob');
-    const encoding = require('encoding');
     const fs = require('fs');
-
-    export enum Charset {
-        UTF8 = 'utf-8',
-        UTF8_BOM = 'utf-8 with bom',
-        CP1252 = 'cp1252'
-    }
+    const { glob } = require('glob');
+    const iconv = require('iconv-lite');
     
     export type Config = {
         root: string,
@@ -53,10 +76,23 @@ export namespace charsetChanger {
         private _createBackup: boolean;
         private backupSuffix: string;
 
-        private createBackup(path: FilePath, data: string): void {
-            if (!this._createBackup) { return; }
-            path += this.backupSuffix;
-            fs.writeFileSync(path, data, { encoding: this._from });
+        private rootPath(relativePath: FilePath): FilePath {
+            return this._root + relativePath;
+        }
+
+        private createBackup(path: FilePath): void {
+            if (this._createBackup) {
+                path = this.rootPath(path);
+                fs.copyFileSync(path, path + this.backupSuffix);
+            }
+        }
+
+        private getDecodedData(path: FilePath, from: Charset): string {
+            return iconv.decode(fs.readFileSync(this.rootPath(path)), from);
+        }
+
+        private setEncodedData(path: FilePath, data: string, to: Charset): void {
+            fs.writeFileSync(this.rootPath(path), iconv.encode(data, to));
         }
 
         private listFiles(): FilePath[] {
@@ -64,9 +100,7 @@ export namespace charsetChanger {
                 let pathArr: FilePath[] = glob.sync(this._search, {
                     cwd: this._root, ignore: this._ignore, cache: 'FILE' 
                 });
-                if (this._onList(pathArr) === false) {
-                    throw 'Aborted by onList listener.';
-                }
+                if (not(this._onList(pathArr))) { throw ListenerException('onList'); }
                 return pathArr;
             } catch (err) {
                 debug('error', err, true);
@@ -76,40 +110,34 @@ export namespace charsetChanger {
 
         private changeCharset(path: FilePath, index?: number, pathArr?: FilePath[]): void {
             try {
-                let rootPath = this.rootPath(path);
-                let data = fs.readFileSync(rootPath, { encoding: this._from });
+                let data: string = this.getDecodedData(path, this._from);
 
-                if (this._onBeforeConvert(path, data, index, pathArr) === false) {
-                    throw 'Aborted by onBeforeConvert listener.';
+                if (not(this._onBeforeConvert(path, data, index, pathArr))) {
+                    throw ListenerException('onBeforeConvert');
                 }
                 
-                this.createBackup(rootPath, data);
-                fs.writeFileSync(rootPath, data, { encoding: this._to });
+                this.createBackup(path);
+                this.setEncodedData(path, data, this._to);
     
-                if (this._onAfterConvert(path, data, index, pathArr) === false) {
-                    throw 'Aborted by onAfterConvert listener.';
+                if (not(this._onAfterConvert(path, data, index, pathArr))) {
+                    throw ListenerException('onAfterConvert');
                 }
             } catch (err) { debug('error', err, true); }
         }
 
-        private rootPath(relativePath: FilePath): FilePath {
-            debug('info', this._root + relativePath);
-            return this._root + relativePath;
-        }
-
-        private convertFileArr(): boolean {
+        private startConvert(): boolean {
             let pathArr: FilePath[] = this.listFiles();
-            let status: boolean = test(() => pathArr.forEach((f,i,arr) => this.changeCharset(f,i,arr)));
+            let status: boolean = !!tryExecute(() => pathArr.forEach((f,i,arr) => this.changeCharset(f,i,arr)));
             this._onFinish(status);
             return status;
         }
 
         public async convert(): Promise<boolean> {
-            return this.convertFileArr();
+            return this.startConvert();
         }
 
         public convertSync(): boolean {
-            return this.convertFileArr();
+            return this.startConvert();
         }
 
         public root(): FilePath;
@@ -140,6 +168,9 @@ export namespace charsetChanger {
         public from(from: Charset): this;
         public from(from?: Charset): this|Charset {
             if (from === void 0) { return this._from; }
+            if (!iconv.encodingExists(from)) {
+                throw `Encoding ${from} is not supported!`;
+            }
             this._from = from;
             return this;
         }
@@ -148,25 +179,22 @@ export namespace charsetChanger {
         public to(to: Charset): this;
         public to(to?: Charset): this|Charset {
             if (to === void 0) { return this._to; }
+            if (!iconv.encodingExists(to)) {
+                throw `Encoding ${to} is not supported!`;
+            }
             this._to = to;
             return this;
         }
 
         public backup(): string;
-        public backup(createBackup: boolean): this;
         public backup(backupSuffix: string): this;
+        public backup(createBackup: boolean): this;
         public backup(backupSuffix: string, createBackup: boolean): this;
         public backup(BSOrCB?: string|boolean, createBackup?: boolean): this|string {
-            if (BSOrCB === void 0) { return this.backupSuffix; }
-            if (typeof BSOrCB === 'boolean') {
-                this._createBackup = BSOrCB;
-                if (BSOrCB && this.backupSuffix === void 0) {
-                    this.backupSuffix = Class.DEFAULT_BACKUP_SUFFIX;
-                }
-                return this;
-            }
-            this._createBackup = createBackup === void 0 ? createBackup : !!BSOrCB;
-            this.backupSuffix = BSOrCB;
+            if (BSOrCB === void 0 && createBackup === void 0) { return this.backupSuffix; }
+            if (typeof BSOrCB === 'boolean') { return this.backup(void 0, BSOrCB); }
+            this._createBackup = createBackup !== void 0 ? createBackup : true;
+            this.backupSuffix = BSOrCB !== void 0 ? BSOrCB : Class.DEFAULT_BACKUP_SUFFIX;
             return this;
         }
 
@@ -196,7 +224,7 @@ export namespace charsetChanger {
                         .ignore(config.ignore || null)
                         .from(config.from || null)
                         .to(config.to || null)
-                        .backup(config.backupSuffix || Class.DEFAULT_BACKUP_SUFFIX, config.createBackup)
+                        .backup(config.backupSuffix, config.createBackup || !!config.backupSuffix)
                         .onList(config.onList || Class.DEFAULT_LISTENER)
                         .onBeforeConvert(config.onBeforeConvert || Class.DEFAULT_LISTENER)
                         .onAfterConvert (config.onAfterConvert || Class.DEFAULT_LISTENER)
@@ -206,7 +234,15 @@ export namespace charsetChanger {
 
     export const STATIC_INSTANCE = new Class();
 
-    function debug(debugType: string, message?: any, throwErr?: boolean): void {
+    function ListenerException(listenerName: string): string {
+        return `Aborted by ${listenerName} listener.`
+    }
+
+    function not(value: any): boolean {
+        return value === false;
+    }
+
+    function debug(debugType: string, message?: any, throwErr?: boolean): any {
         if (debugType === 'none') { return; }
         if (throwErr && debugType === 'error') {
             throw `[CharsetChanger] ${message}`;
@@ -214,13 +250,14 @@ export namespace charsetChanger {
         console[debugType]('[CharsetChanger]', message);
     }
 
-    function test(assert: Function, throwErr?: boolean): boolean {
-        try {
-            assert();
-            return true;
-        } catch (err) {
-            debug('error', err, throwErr);
-            return false;
-        }
+    function tryExecute(tryFn: Function, throwErr?: boolean): boolean {
+        try{return tryFn()||true}catch(err){return debug('error',err,throwErr)&&false}
     }
 }
+
+/**
+ * MODULE EXPORTS
+ */
+export type CharsetChanger = charsetChanger.Class;
+export const Class = charsetChanger.Class;
+export const CharsetChanger = Class;

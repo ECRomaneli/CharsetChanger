@@ -48,7 +48,7 @@ const { charsetChangerSync } = require('charset-changer')
 See [the test folder](https://github.com/ECRomaneli/CharsetChanger/blob/master/test).
 
 ## Objectives to first stable version
-- Use `iconv` instead of `node-fs` to convert charcodes for more possibilities;
+- Use `iconv-lite` instead of `node-fs` to convert charcodes for more possibilities;
 - Do not convert files already in "to" charset;
 - Create an `electron` app to convert entire projects [separate project].
 

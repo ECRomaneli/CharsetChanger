@@ -1,4 +1,7 @@
 "use strict";
+/**
+ * MODULE STATIC EXPORTS
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -17,31 +20,57 @@ function charsetChangerSync(config) {
     return charsetChanger.STATIC_INSTANCE.setConfig(config).convertSync();
 }
 exports.charsetChangerSync = charsetChangerSync;
+/**
+ * MODULE CORE
+ */
+var Charset;
+(function (Charset) {
+    Charset["UCS2"] = "ucs2";
+    Charset["UTF7"] = "utf-7";
+    Charset["UTF7_IMAP"] = "utf-7-imap";
+    Charset["UTF8"] = "utf8";
+    Charset["UTF16"] = "utf16";
+    Charset["UTF16_LE"] = "utf16-le";
+    Charset["UTF16_BE"] = "utf16-le";
+    Charset["UTF32"] = "utf32";
+    Charset["UTF32_LE"] = "utf32-le";
+    Charset["UTF32_BE"] = "utf32-le";
+    Charset["ASCII"] = "ascii";
+    Charset["BINARY"] = "binary";
+    Charset["BASE64"] = "base64";
+    Charset["HEX"] = "hex";
+    Charset["WIN1252"] = "cp1252";
+    Charset["CP1252"] = "cp1252";
+    Charset["ISO8859_1"] = "iso8859-1";
+    Charset["LATIN1"] = "iso8859-1";
+})(Charset = exports.Charset || (exports.Charset = {}));
 (function (charsetChanger) {
-    const { glob } = require('glob');
-    const encoding = require('encoding');
     const fs = require('fs');
-    let Charset;
-    (function (Charset) {
-        Charset["UTF8"] = "utf-8";
-        Charset["UTF8_BOM"] = "utf-8 with bom";
-        Charset["CP1252"] = "cp1252";
-    })(Charset = charsetChanger.Charset || (charsetChanger.Charset = {}));
+    const { glob } = require('glob');
+    const iconv = require('iconv-lite');
     class Class {
-        createBackup(path, data) {
-            if (!this._createBackup) {
-                return;
+        rootPath(relativePath) {
+            return this._root + relativePath;
+        }
+        createBackup(path) {
+            if (this._createBackup) {
+                path = this.rootPath(path);
+                fs.copyFileSync(path, path + this.backupSuffix);
             }
-            path += this.backupSuffix;
-            fs.writeFileSync(path, data, { encoding: this._from });
+        }
+        getDecodedData(path, from) {
+            return iconv.decode(fs.readFileSync(this.rootPath(path)), from);
+        }
+        setEncodedData(path, data, to) {
+            fs.writeFileSync(this.rootPath(path), iconv.encode(data, to));
         }
         listFiles() {
             try {
                 let pathArr = glob.sync(this._search, {
                     cwd: this._root, ignore: this._ignore, cache: 'FILE'
                 });
-                if (this._onList(pathArr) === false) {
-                    throw 'Aborted by onList listener.';
+                if (not(this._onList(pathArr))) {
+                    throw ListenerException('onList');
                 }
                 return pathArr;
             }
@@ -52,38 +81,33 @@ exports.charsetChangerSync = charsetChangerSync;
         }
         changeCharset(path, index, pathArr) {
             try {
-                let rootPath = this.rootPath(path);
-                let data = fs.readFileSync(rootPath, { encoding: this._from });
-                if (this._onBeforeConvert(path, data, index, pathArr) === false) {
-                    throw 'Aborted by onBeforeConvert listener.';
+                let data = this.getDecodedData(path, this._from);
+                if (not(this._onBeforeConvert(path, data, index, pathArr))) {
+                    throw ListenerException('onBeforeConvert');
                 }
-                this.createBackup(rootPath, data);
-                fs.writeFileSync(rootPath, data, { encoding: this._to });
-                if (this._onAfterConvert(path, data, index, pathArr) === false) {
-                    throw 'Aborted by onAfterConvert listener.';
+                this.createBackup(path);
+                this.setEncodedData(path, data, this._to);
+                if (not(this._onAfterConvert(path, data, index, pathArr))) {
+                    throw ListenerException('onAfterConvert');
                 }
             }
             catch (err) {
                 debug('error', err, true);
             }
         }
-        rootPath(relativePath) {
-            debug('info', this._root + relativePath);
-            return this._root + relativePath;
-        }
-        convertFileArr() {
+        startConvert() {
             let pathArr = this.listFiles();
-            let status = test(() => pathArr.forEach((f, i, arr) => this.changeCharset(f, i, arr)));
+            let status = !!tryExecute(() => pathArr.forEach((f, i, arr) => this.changeCharset(f, i, arr)));
             this._onFinish(status);
             return status;
         }
         convert() {
             return __awaiter(this, void 0, void 0, function* () {
-                return this.convertFileArr();
+                return this.startConvert();
             });
         }
         convertSync() {
-            return this.convertFileArr();
+            return this.startConvert();
         }
         root(root) {
             if (root === void 0) {
@@ -110,6 +134,9 @@ exports.charsetChangerSync = charsetChangerSync;
             if (from === void 0) {
                 return this._from;
             }
+            if (!iconv.encodingExists(from)) {
+                throw `Encoding ${from} is not supported!`;
+            }
             this._from = from;
             return this;
         }
@@ -117,22 +144,21 @@ exports.charsetChangerSync = charsetChangerSync;
             if (to === void 0) {
                 return this._to;
             }
+            if (!iconv.encodingExists(to)) {
+                throw `Encoding ${to} is not supported!`;
+            }
             this._to = to;
             return this;
         }
         backup(BSOrCB, createBackup) {
-            if (BSOrCB === void 0) {
+            if (BSOrCB === void 0 && createBackup === void 0) {
                 return this.backupSuffix;
             }
             if (typeof BSOrCB === 'boolean') {
-                this._createBackup = BSOrCB;
-                if (BSOrCB && this.backupSuffix === void 0) {
-                    this.backupSuffix = Class.DEFAULT_BACKUP_SUFFIX;
-                }
-                return this;
+                return this.backup(void 0, BSOrCB);
             }
-            this._createBackup = createBackup === void 0 ? createBackup : !!BSOrCB;
-            this.backupSuffix = BSOrCB;
+            this._createBackup = createBackup !== void 0 ? createBackup : true;
+            this.backupSuffix = BSOrCB !== void 0 ? BSOrCB : Class.DEFAULT_BACKUP_SUFFIX;
             return this;
         }
         onList(onList) {
@@ -157,7 +183,7 @@ exports.charsetChangerSync = charsetChangerSync;
                 .ignore(config.ignore || null)
                 .from(config.from || null)
                 .to(config.to || null)
-                .backup(config.backupSuffix || Class.DEFAULT_BACKUP_SUFFIX, config.createBackup)
+                .backup(config.backupSuffix, config.createBackup || !!config.backupSuffix)
                 .onList(config.onList || Class.DEFAULT_LISTENER)
                 .onBeforeConvert(config.onBeforeConvert || Class.DEFAULT_LISTENER)
                 .onAfterConvert(config.onAfterConvert || Class.DEFAULT_LISTENER)
@@ -168,6 +194,12 @@ exports.charsetChangerSync = charsetChangerSync;
     Class.DEFAULT_LISTENER = () => { };
     charsetChanger.Class = Class;
     charsetChanger.STATIC_INSTANCE = new Class();
+    function ListenerException(listenerName) {
+        return `Aborted by ${listenerName} listener.`;
+    }
+    function not(value) {
+        return value === false;
+    }
     function debug(debugType, message, throwErr) {
         if (debugType === 'none') {
             return;
@@ -177,14 +209,14 @@ exports.charsetChangerSync = charsetChangerSync;
         }
         console[debugType]('[CharsetChanger]', message);
     }
-    function test(assert, throwErr) {
+    function tryExecute(tryFn, throwErr) {
         try {
-            assert();
-            return true;
+            return tryFn() || true;
         }
         catch (err) {
-            debug('error', err, throwErr);
-            return false;
+            return debug('error', err, throwErr) && false;
         }
     }
 })(charsetChanger = exports.charsetChanger || (exports.charsetChanger = {}));
+exports.Class = charsetChanger.Class;
+exports.CharsetChanger = exports.Class;
