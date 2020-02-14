@@ -89,7 +89,7 @@ export declare namespace charsetChanger {
         onFinish(onFinish: OnFinish): this;
         setConfig(config: Config): this;
     }
-    export const STATIC_INSTANCE: Class;
+    export const instance: Class;
     export {};
 }
 /**

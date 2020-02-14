@@ -1,11 +1,11 @@
 {
   "name": "charset-changer",
-  "version": "0.2.1",
+  "version": "0.2.6",
   "description": "Change the charset for an entire folder recursively",
-  "main": "dist/module/charsetChanger",
+  "main": "dist/module/charsetChanger.min",
   "typings": "dist/module/charsetChanger",
   "scripts": {
-    "build": "sh build.sh module",
+    "build": "sh build.sh",
     "test": "node test/test.js"
   },
   "repository": {
@@ -18,7 +18,8 @@
   },
   "devDependencies": {
     "@types/node": "^13.7.0",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "uglify-es": "^3.3.9"
   },
   "keywords": [
     "charset-changer",

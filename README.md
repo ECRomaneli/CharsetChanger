@@ -3,11 +3,17 @@
 </p>
 <p align='center'>
     Change the charset for an entire folder recursively
-<p/>
+</p>
 <p align='center'>
-    <img src="https://img.shields.io/npm/v/charset-changer.svg" alt="module version">
-    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="GitHub license">
-    <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="contributions welcome">
+    <a href='https://www.npmjs.com/package/charset-changer'>
+        <img alt='npm version' src='https://img.shields.io/npm/v/charset-changer.svg'/>
+    </a>
+    <a href='https://github.com/ECRomaneli/CharsetChanger/blob/master/LICENSE'>
+        <img alt='mit license' src='https://img.shields.io/badge/license-MIT-blue.svg'/>
+    </a>
+    <a href='https://github.com/ECRomaneli/CharsetChanger'>
+        <img alt='contributions welcome' src='https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat'/>
+    </a>
 </p>
 
 ## Install

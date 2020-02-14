@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { charsetChangerSync, charsetChanger, Charset } = require('../dist/module/charsetChanger');
+const { charsetChangerSync, charsetChanger, Charset } = require('../');
 
 assert.doesNotThrow(() => {
     charsetChanger({
@@ -7,5 +7,6 @@ assert.doesNotThrow(() => {
         search: 'example*.txt',
         from: Charset.UTF8,
         to: Charset.ISO8859_1
-    }).finally(() => console.log("finally"));
+    }).finally(() => console.log("async"));
 }, 'Static changer - Example');
+console.log('sync');

@@ -3,11 +3,11 @@
  */
 
 export function charsetChanger(config: charsetChanger.Config): Promise<boolean> {
-    return charsetChanger.STATIC_INSTANCE.setConfig(config).convert();
+    return charsetChanger.instance.setConfig(config).convert();
 }
 
 export function charsetChangerSync(config: charsetChanger.Config): boolean {
-    return charsetChanger.STATIC_INSTANCE.setConfig(config).convertSync();
+    return charsetChanger.instance.setConfig(config).convertSync();
 }
 
 /**
@@ -127,7 +127,7 @@ export namespace charsetChanger {
 
         private startConvert(): boolean {
             let pathArr: FilePath[] = this.listFiles();
-            let status: boolean = !!tryExecute(() => pathArr.forEach((f,i,arr) => this.changeCharset(f,i,arr)));
+            let status: boolean = tryExecute(() => pathArr.forEach((f,i,arr) => this.changeCharset(f,i,arr)));
             this._onFinish(status);
             return status;
         }
@@ -233,7 +233,7 @@ export namespace charsetChanger {
         }
     }
 
-    export const STATIC_INSTANCE = new Class();
+    export const instance = new Class();
 
     function ListenerException(listenerName: string): string {
         return `Aborted by ${listenerName} listener.`
