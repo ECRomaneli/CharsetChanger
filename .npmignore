@@ -1,9 +1,13 @@
+test/
 lib/
 dist/web/
 dist/logo/
 .circleci/
+.vscode/
 
+*.map
 build.sh
 tsconfig.json
+package-lock.json
 .gitignore
 .npmignore

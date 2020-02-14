@@ -2,7 +2,7 @@
   "name": "charset-changer",
   "version": "0.3.0",
   "description": "Change the charset for an entire folder recursively",
-  "main": "dist/module/charsetChanger.min",
+  "main": "dist/module/charsetChanger",
   "typings": "dist/module/charsetChanger",
   "scripts": {
     "build": "sh build.sh",
