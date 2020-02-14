@@ -1,6 +1,6 @@
 {
   "name": "charset-changer",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "description": "Change the charset for an entire folder recursively",
   "main": "dist/module/charsetChanger.min",
   "typings": "dist/module/charsetChanger",
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "glob": "^7.1.6",
+    "chardet": "0.8.0",
     "iconv-lite": "0.5.1"
   },
   "devDependencies": {
@@ -29,10 +30,12 @@
     "charset",
     "iconv",
     "iconv-lite",
+    "chardet",
+    "icu",
+    "detector",
+    "detect",
     "glob",
-    "utf-8",
     "utf8",
-    "latin",
     "latin1",
     "iso8859-1"
   ],

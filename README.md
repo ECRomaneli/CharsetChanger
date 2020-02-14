@@ -51,16 +51,18 @@ The `charsetChanger` have only one argument, the `CharsetChanger.Config`. Use it
 ```typescript
     {
         root: string, // root path.
-        search: GlobString, // glob string (see on "How it works" section).
+        search?: GlobString, // glob string (see on "How it works" section).
         ignore?: GlobString, // glob string.
-        from: Charset|string, // Original charset.
-        to: Charset|string, // Dest. charset.
+        from?: Charset|string, // From charset. Default: Charset Detector.
+        to: Charset|string, // To charset.
         createBackup?: boolean, // create backup? Default is false.
         backupSuffix?: string, // backup suffix. Default is ".bkp".
         onList?: OnList, // On get list of files listener.
         onBeforeConvert?: OnBeforeConvert, // On before convert listener.
         onAfterConvert?: OnAfterConvert, // On after convert listener.
-        onFinish?: OnFinish // On finish listener.
+        onFinish?: OnFinish, // On finish listener.
+        debug?: boolean, // Show messages.
+        detectorFilter?: DetectorFilter // Filter files by charset detection.
     }
 ```
 
@@ -97,6 +99,9 @@ public from(from: Charset): this;
 public to(): Charset;
 public to(to: Charset): this;
 
+public debug(): boolean;
+public debug(debug: boolean): this;
+
 public backup(): string;
 public backup(backupSuffix: string): this;
 public backup(createBackup: boolean): this;
@@ -106,6 +111,7 @@ public onList(onList: OnList): this;
 public onBeforeConvert(onBeforeConvert: OnBeforeConvert): this;
 public onAfterConvert(onAfterConvert: OnAfterConvert): this;
 public onFinish(onFinish: OnFinish): this;
+public setDetectorFilter(detectorFilter: DetectorFilter): this;
 
 public setConfig(config: CharsetChanger.Config): this;
 ```
@@ -121,7 +127,7 @@ See the [example here](#async-class-method).
 
 ## How it works
 
-This lib uses `glob` and `iconv-lite` to automate charset changes into an folder (or project) recursively.
+This lib uses `glob`, `iconv-lite` and `chardet` to automate charset changes into an folder (or project) recursively.
 
 With the `glob` features, you gonna use an complex search string to get filtered files into the root path.
 
@@ -196,7 +202,11 @@ See more usages into the [test folder](https://github.com/ECRomaneli/CharsetChan
 
 ## Objectives to the first stable release
 - <del>Use `iconv-lite` instead of `node-fs` to convert charcodes for more possibilities;</del>
-- Do not convert files already in "to" charset (best as possible);
+- <del>Do not convert files already in "to" charset;</del>
+- <del>Debug;</del>
+- Grant async functions.
+
+## Future Project
 - Create an `electron` app to convert entire projects [separate project].
 
 ## Author

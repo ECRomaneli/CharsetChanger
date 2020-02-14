@@ -3,10 +3,11 @@ const { charsetChangerSync, charsetChanger, Charset } = require('../');
 
 assert.doesNotThrow(() => {
     charsetChanger({
-        root: 'test/output',
-        search: 'example*.txt',
-        from: Charset.UTF8,
-        to: Charset.ISO8859_1
-    }).finally(() => console.log("async"));
+        root: 'test',
+        to: Charset.UTF8,
+        debug: !true,
+        detectorFilter: () => false,
+        onFinish: ()=> console.log('async')
+    });
+    console.log('sync');
 }, 'Static changer - Example');
-console.log('sync');

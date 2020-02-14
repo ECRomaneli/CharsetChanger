@@ -17,5 +17,4 @@ for JS in dist/module/*.js; do
     rm -f $JS
 done
 
-
 echo 'Build finish!'
