@@ -71,7 +71,7 @@ export declare namespace charsetChanger {
     export type Config = {
         root: string;
         search?: GlobString;
-        ignore?: GlobString;
+        ignore?: GlobString | GlobString[];
         from?: Charset;
         to: Charset;
         createBackup?: boolean;
@@ -81,6 +81,7 @@ export declare namespace charsetChanger {
         onAfterConvert?: OnAfterConvert;
         onFinish?: OnFinish;
         detectorFilter?: DetectorFilter;
+        debug?: boolean;
     };
     export class Class {
         private _root;
@@ -96,6 +97,8 @@ export declare namespace charsetChanger {
         private _createBackup;
         private backupSuffix;
         private _messageList;
+        private _debug;
+        private Debug;
         constructor();
         private tryConvert;
         private addMessage;
@@ -113,8 +116,8 @@ export declare namespace charsetChanger {
         root(root: FilePath): this;
         search(): GlobString;
         search(search: GlobString): this;
-        ignore(): GlobString;
-        ignore(ignore: GlobString): this;
+        ignore(): GlobString | GlobString[];
+        ignore(ignore: GlobString | GlobString[]): this;
         from(): Charset;
         from(from: Charset): this;
         to(): Charset;
@@ -123,6 +126,8 @@ export declare namespace charsetChanger {
         backup(backupSuffix: string): this;
         backup(createBackup: boolean): this;
         backup(backupSuffix: string, createBackup: boolean): this;
+        debug(): boolean;
+        debug(debug: boolean): this;
         onList(onList: OnList): this;
         onBeforeConvert(onBeforeConvert: OnBeforeConvert): this;
         onAfterConvert(onAfterConvert: OnAfterConvert): this;

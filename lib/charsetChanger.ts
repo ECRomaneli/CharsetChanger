@@ -72,7 +72,6 @@ export namespace charsetChanger {
     export type OnAfterConvert = (path: FilePath, data: string, index: number, pathArr: FilePath[]) => boolean|void;
     export type MessageList = { file: FilePath, message: string }[];
     export type OnFinish = (status: boolean, messageList: MessageList) => boolean|void;
-
     export type DetectorFilter = (path: FilePath, charset: Charset) => boolean|void;
     
     type FilePath = string;
@@ -89,7 +88,7 @@ export namespace charsetChanger {
     export type Config = {
         root: string,
         search?: GlobString,
-        ignore?: GlobString,
+        ignore?: GlobString|GlobString[],
         from?: Charset,
         to: Charset,
         createBackup?: boolean,
@@ -98,13 +97,14 @@ export namespace charsetChanger {
         onBeforeConvert?: OnBeforeConvert,
         onAfterConvert?: OnAfterConvert,
         onFinish?: OnFinish,
-        detectorFilter?: DetectorFilter
+        detectorFilter?: DetectorFilter,
+        debug?: boolean
     };
     
     export class Class {
         private _root: string;
         private _search: GlobString;
-        private _ignore: GlobString;
+        private _ignore: GlobString|GlobString[];
         private _from: Charset;
         private _to: Charset;
         private _onList: OnList;
@@ -115,6 +115,13 @@ export namespace charsetChanger {
         private _createBackup: boolean;
         private backupSuffix: string;
         private _messageList: MessageList;
+        private _debug: boolean;
+        private Debug = {
+            log: (message) => this._debug && debug('log', message),
+            info: (message) => this._debug && debug('info', message),
+            warn: (message) => this._debug && debug('warn', message),
+            err: (message, throwErr?) => this._debug && debug('error', message, throwErr !== false)
+        }
 
         constructor () { this._messageList = []; }
 
@@ -123,12 +130,13 @@ export namespace charsetChanger {
                 tryFn();
                 this._onFinish(true, this._messageList);
             } catch(err) {
-                debug('error',err,true);
                 this._onFinish(false, this._messageList);
+                this.Debug.err(err);
             }
         }
 
         private addMessage(file: FilePath, message: string, throwErr?: boolean): void {
+            this.Debug.info(message);
             this._messageList.push({file, message});
             if (throwErr) { throw message; }
         }
@@ -141,10 +149,10 @@ export namespace charsetChanger {
             let charset: Charset = chardet.detect(buffer, { sampleSize: MAX_SAMPLE_SIZE });
             if (!iconv.encodingExists(charset)) {
                 this.addMessage(path, EncodingNotSupportedMessage(charset));
-            } else if (this._to === this._from) {
+            } else if (charset === this._to) {
                 this.addMessage(path, SkippingConversionMessage(path, `The file is already ${charset}`));
             } else if (not(this._detectorFilter(path, charset))) {
-                this.addMessage(path, SkippingConversionMessage(path, `Charset: ${charset}`));
+                this.addMessage(path, SkippingConversionMessage(path, `Charset detected: ${charset}`));
             } else {
                 return charset;
             }
@@ -152,40 +160,44 @@ export namespace charsetChanger {
         }
 
         private getDecodedData(path: FilePath): string {
+            this.Debug.log('Getting decoded data...');
             let fileBuffer: Buffer = fs.readFileSync(this.rootPath(path));
             let from: Charset = this._from || this.detectCharset(path, fileBuffer);
-            if (!from) { return null; }
-            return iconv.decode(fs.readFileSync(this.rootPath(path)), from);
+            this.Debug.info(`Charset: ${from};`);
+            return from ? iconv.decode(fs.readFileSync(this.rootPath(path)), from) : null;
         }
 
         private setEncodedData(path: FilePath, data: string): void {
+            this.Debug.log('Setting encoded data...');
+            this.Debug.info(`Charset: ${this._to};`);
             fs.writeFileSync(this.rootPath(path), iconv.encode(data, this._to));
         }
 
         private createBackup(path: FilePath): void {
             if (this._createBackup) {
+                this.Debug.log('Creating backup...');
+                this.Debug.info(`Backup suffix: ${this.backupSuffix}`);
                 path = this.rootPath(path);
                 fs.copyFileSync(path, path + this.backupSuffix);
             }
         }
 
         private listFiles(): FilePath[] {
-            try {
-                let pathArr: FilePath[] = glob.sync(this._search, {
-                    cwd: this._root, ignore: this._ignore, nodir: true
-                });
-                if (not(this._onList(pathArr))) {
-                    this.addMessage(null, ListenerMessage('onList'), true);
-                }
-                return pathArr;
-            } catch (err) {
-                debug('error', err, true);
-                return [];
+            this.Debug.log('Listing files...');
+            let pathArr: FilePath[] = glob.sync(this._search, {
+                cwd: this._root, ignore: this._ignore, nodir: true
+            });
+
+            this.Debug.info(pathArr);
+            if (not(this._onList(pathArr))) {
+                this.addMessage(null, ListenerMessage('onList'), true);
             }
+            return pathArr;
         }
 
         private changeCharset(path: FilePath, index?: number, pathArr?: FilePath[]): void {
             let data: string = this.getDecodedData(path);
+            if (data === null) { return; }
 
             if (not(this._onBeforeConvert(path, data, index, pathArr))) {
                 this.addMessage(path, ListenerMessage('onBeforeConvert'));
@@ -201,12 +213,15 @@ export namespace charsetChanger {
         }
 
         private startConvert(): void {
-            let pathArr: FilePath[] = this.listFiles();
-            this.tryConvert(() => pathArr.forEach((f,i,arr) => this.changeCharset(f,i,arr)));
+            this.tryConvert(() => {
+                this.Debug.log('Try converting...');
+                this.listFiles().forEach((f,i,arr) => this.changeCharset(f,i,arr));
+                this.Debug.log('Finished.');
+            });
         }
 
-        public async convert(): Promise<void> {
-            this.startConvert();
+        public convert(): Promise<void> {
+            return new Promise<void>((resolve) => resolve(this.startConvert()));
         }
 
         public convertSync(): void {
@@ -229,9 +244,9 @@ export namespace charsetChanger {
             return this;
         }
 
-        public ignore(): GlobString;
-        public ignore(ignore: GlobString): this;
-        public ignore(ignore?: GlobString): this|GlobString {
+        public ignore(): GlobString|GlobString[];
+        public ignore(ignore: GlobString|GlobString[]): this;
+        public ignore(ignore?: GlobString|GlobString[]): this|GlobString|GlobString[] {
             if (ignore === void 0) { return this._ignore; }
             this._ignore = ignore;
             return this;
@@ -268,6 +283,14 @@ export namespace charsetChanger {
             if (typeof BSOrCB === 'boolean') { return this.backup(void 0, BSOrCB); }
             this._createBackup = createBackup !== void 0 ? createBackup : true;
             this.backupSuffix = BSOrCB !== void 0 ? BSOrCB : DEFAULT_BACKUP_SUFFIX;
+            return this;
+        }
+
+        public debug(): boolean;
+        public debug(debug: boolean): this;
+        public debug(debug?: boolean): this|boolean {
+            if (debug === void 0) { return this._debug; }
+            this._debug = debug;
             return this;
         }
 
@@ -308,7 +331,8 @@ export namespace charsetChanger {
                 .onBeforeConvert(config.onBeforeConvert || DEFAULT_LISTENER)
                 .onAfterConvert (config.onAfterConvert || DEFAULT_LISTENER)
                 .onFinish(config.onFinish || DEFAULT_LISTENER)
-                .detectorFilter(config.detectorFilter || DEFAULT_LISTENER);
+                .detectorFilter(config.detectorFilter || DEFAULT_LISTENER)
+                .debug(config.debug || false);
         }
     }
 
@@ -317,17 +341,11 @@ export namespace charsetChanger {
     const SkippingConversionMessage = (p, m) => `Skipping "${p}" conversion. ${m}.`;
     const ListenerMessage = (lName) => `The ${lName} listener returned false.`;
     const EncodingNotSupportedMessage = (c) => `Encoding ${c} is not supported!`;
-
-    function not(value: any): boolean {
-        return value === false;
-    }
+    const not = (value) => value === false;
 
     function debug(debugType: string, message?: any, throwErr?: boolean): any {
-        if (debugType === 'none') { return; }
-        if (throwErr && debugType === 'error') {
-            throw `[CharsetChanger] ${message}`;
-        }
-        console[debugType]('[CharsetChanger]', message);
+        if (throwErr && debugType === 'error') { throw `[CharsetChanger] ${message}`; }
+        console[debugType](`[CharsetChanger] ${debugType.toUpperCase()} `, message);
     }
 }
 
