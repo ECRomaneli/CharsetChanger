@@ -147,7 +147,9 @@ export namespace charsetChanger {
 
         private detectCharset(path: FilePath, buffer: Buffer): Charset {
             let charset: Charset = chardet.detect(buffer, { sampleSize: MAX_SAMPLE_SIZE });
-            if (!iconv.encodingExists(charset)) {
+            if (charset === null) {
+                this.addMessage(path, SkippingConversionMessage(path, 'Charset not detected'));
+            } else if (!iconv.encodingExists(charset)) {
                 this.addMessage(path, EncodingNotSupportedMessage(charset));
             } else if (charset === this._to) {
                 this.addMessage(path, SkippingConversionMessage(path, `The file is already ${charset}`));
@@ -232,7 +234,7 @@ export namespace charsetChanger {
         public root(root: FilePath): this;
         public root(root?: FilePath): this|FilePath {
             if (root === void 0) { return this._root; }
-            this._root = root.charAt(root.length-1)!=='/'?root+'/':root;
+            this._root = root;
             return this;
         }
 
