@@ -177,7 +177,12 @@ var Charset;
             });
         }
         convert() {
-            return new Promise((resolve) => resolve(this.startConvert()));
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    this.startConvert();
+                    resolve();
+                }, 0);
+            });
         }
         convertSync() {
             this.startConvert();
@@ -186,7 +191,7 @@ var Charset;
             if (root === void 0) {
                 return this._root;
             }
-            this._root = root;
+            this._root = root.charAt(root.length - 1) !== '/' ? root + '/' : root;
             return this;
         }
         search(search) {

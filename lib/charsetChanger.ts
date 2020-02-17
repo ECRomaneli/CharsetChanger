@@ -223,7 +223,12 @@ export namespace charsetChanger {
         }
 
         public convert(): Promise<void> {
-            return new Promise<void>((resolve) => resolve(this.startConvert()));
+            return new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    this.startConvert();
+                    resolve();
+                }, 0);
+            });
         }
 
         public convertSync(): void {
@@ -234,7 +239,7 @@ export namespace charsetChanger {
         public root(root: FilePath): this;
         public root(root?: FilePath): this|FilePath {
             if (root === void 0) { return this._root; }
-            this._root = root;
+            this._root = root.charAt(root.length-1)!=='/'?root+'/':root;
             return this;
         }
 
