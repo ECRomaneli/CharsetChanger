@@ -202,8 +202,7 @@ export namespace charsetChanger {
             if (data === null) { return; }
 
             if (not(this._onBeforeConvert(path, data, index, pathArr))) {
-                this.addMessage(path, ListenerMessage('onBeforeConvert'));
-                return;
+                return this.addMessage(path, ListenerMessage('onBeforeConvert'));
             }
             
             this.createBackup(path);
@@ -222,13 +221,9 @@ export namespace charsetChanger {
             });
         }
 
-        public convert(): Promise<void> {
-            return new Promise<void>((resolve) => {
-                setTimeout(() => {
-                    this.startConvert();
-                    resolve();
-                }, 0);
-            });
+        public async convert(): Promise<void> {
+            setTimeout(() => this.startConvert(), 0);
+            return;
         }
 
         public convertSync(): void {

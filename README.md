@@ -198,7 +198,9 @@ See more usages into the [test folder](https://github.com/ECRomaneli/CharsetChan
 - <del>Use `iconv-lite` instead of `node-fs` to convert charcodes for more possibilities;</del>
 - <del>Do not convert files already in "to" charset;</del>
 - <del>Debug;</del>
-- Grant async functions.
+- <del>Grant async functions.</del>
+
+Testing...
 
 ## Future Project
 - Create an `electron` app to convert entire projects [separate project].

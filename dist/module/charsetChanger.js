@@ -160,8 +160,7 @@ var Charset;
                 return;
             }
             if (not(this._onBeforeConvert(path, data, index, pathArr))) {
-                this.addMessage(path, ListenerMessage('onBeforeConvert'));
-                return;
+                return this.addMessage(path, ListenerMessage('onBeforeConvert'));
             }
             this.createBackup(path);
             this.setEncodedData(path, data);
@@ -176,13 +175,9 @@ var Charset;
                 this.Debug.log('Finished.');
             });
         }
-        convert() {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    this.startConvert();
-                    resolve();
-                }, 0);
-            });
+        async convert() {
+            setTimeout(() => this.startConvert(), 0);
+            return;
         }
         convertSync() {
             this.startConvert();
