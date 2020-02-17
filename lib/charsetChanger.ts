@@ -147,7 +147,9 @@ export namespace charsetChanger {
 
         private detectCharset(path: FilePath, buffer: Buffer): Charset {
             let charset: Charset = chardet.detect(buffer, { sampleSize: MAX_SAMPLE_SIZE });
-            if (!iconv.encodingExists(charset)) {
+            if (charset === null) {
+                this.addMessage(path, SkippingConversionMessage(path, 'Charset not detected'));
+            } else if (!iconv.encodingExists(charset)) {
                 this.addMessage(path, EncodingNotSupportedMessage(charset));
             } else if (charset === this._to) {
                 this.addMessage(path, SkippingConversionMessage(path, `The file is already ${charset}`));
@@ -200,8 +202,7 @@ export namespace charsetChanger {
             if (data === null) { return; }
 
             if (not(this._onBeforeConvert(path, data, index, pathArr))) {
-                this.addMessage(path, ListenerMessage('onBeforeConvert'));
-                return;
+                return this.addMessage(path, ListenerMessage('onBeforeConvert'));
             }
             
             this.createBackup(path);
@@ -220,8 +221,9 @@ export namespace charsetChanger {
             });
         }
 
-        public convert(): Promise<void> {
-            return new Promise<void>((resolve) => resolve(this.startConvert()));
+        public async convert(): Promise<void> {
+            setTimeout(() => this.startConvert(), 0);
+            return;
         }
 
         public convertSync(): void {

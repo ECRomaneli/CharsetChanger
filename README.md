@@ -5,26 +5,20 @@
     Change the charset for an entire folder recursively
 </p>
 <p align='center'>
-    <a href='https://www.npmjs.com/package/charset-changer'>
-        <img alt='npm version' src='https://img.shields.io/npm/v/charset-changer.svg'/>
-    </a>
-    <a href='https://github.com/ECRomaneli/CharsetChanger/blob/master/LICENSE'>
-        <img alt='mit license' src='https://img.shields.io/badge/license-MIT-blue.svg'/>
-    </a>
-    <a href='https://github.com/ECRomaneli/CharsetChanger'>
-        <img alt='contributions welcome' src='https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat'/>
-    </a>
+    <a href='https://www.npmjs.com/package/charset-changer'><img alt='npm version' src='https://img.shields.io/npm/v/charset-changer.svg'/></a>
+    <a href='https://github.com/ECRomaneli/CharsetChanger/blob/master/LICENSE'><img alt='mit license' src='https://img.shields.io/badge/license-MIT-blue.svg'/></a>
+    <a href='https://github.com/ECRomaneli/CharsetChanger'><img alt='contributions welcome' src='https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat'/></a>
 </p>
+
+## Objective
+
+The objective of this library is help to solve some charset issues in projects with many workers. For this purpose, this library helps to convert all necessary files to the correct charset.
 
 ## Install
 
 ```
 npm i charset-changer
 ```
-
-## Objective
-
-The objective of this library is help to solve some charset issues in projects with many workers. For this purpose, this library helps to convert all necessary files to the correct charset.
 
 ## Getting Started
 
@@ -204,7 +198,9 @@ See more usages into the [test folder](https://github.com/ECRomaneli/CharsetChan
 - <del>Use `iconv-lite` instead of `node-fs` to convert charcodes for more possibilities;</del>
 - <del>Do not convert files already in "to" charset;</del>
 - <del>Debug;</del>
-- Grant async functions.
+- <del>Grant async functions.</del>
+
+Testing...
 
 ## Future Project
 - Create an `electron` app to convert entire projects [separate project].
