@@ -194,14 +194,6 @@ charsetChanger.setConfig({
 
 See more usages into the [test folder](https://github.com/ECRomaneli/CharsetChanger/blob/master/test).
 
-## Objectives to the first stable release
-- <del>Use `iconv-lite` instead of `node-fs` to convert charcodes for more possibilities;</del>
-- <del>Do not convert files already in "to" charset;</del>
-- <del>Debug;</del>
-- <del>Grant async functions.</del>
-
-Testing...
-
 ## Future Project
 - Create an `electron` app to convert entire projects [separate project].
 

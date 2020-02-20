@@ -6,7 +6,7 @@
   * Change charset. 
   * @param config Used to config the CharsetChanger before convert.
   */
-export function charsetChanger(config: charsetChanger.Config): Promise<void> {
+export async function charsetChanger(config: charsetChanger.Config): Promise<void> {
     return charsetChanger.instance.setConfig(config).convert();
 }
 
@@ -166,7 +166,7 @@ export namespace charsetChanger {
             let fileBuffer: Buffer = fs.readFileSync(this.rootPath(path));
             let from: Charset = this._from || this.detectCharset(path, fileBuffer);
             this.Debug.info(`Charset: ${from};`);
-            return from ? iconv.decode(fs.readFileSync(this.rootPath(path)), from) : null;
+            return from ? iconv.decode(fileBuffer, from) : null;
         }
 
         private setEncodedData(path: FilePath, data: string): void {

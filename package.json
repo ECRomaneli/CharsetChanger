@@ -1,11 +1,12 @@
 {
   "name": "charset-changer",
-  "version": "0.4.0",
+  "version": "1.0.3",
   "description": "Change the charset for an entire folder recursively",
   "main": "dist/module/charsetChanger",
   "typings": "dist/module/charsetChanger",
   "scripts": {
     "build": "sh build.sh",
+    "prepublishOnly": "sh build.sh minify",
     "test": "node test/test.js"
   },
   "repository": {
@@ -13,8 +14,8 @@
     "url": "git+https://github.com/ECRomaneli/CharsetChanger.git"
   },
   "dependencies": {
-    "glob": "^7.1.6",
     "chardet": "0.8.0",
+    "glob": "^7.1.6",
     "iconv-lite": "0.5.1"
   },
   "devDependencies": {
