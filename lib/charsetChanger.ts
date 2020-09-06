@@ -209,7 +209,7 @@ export namespace charsetChanger {
             this.setEncodedData(path, data);
 
             if (not(this._onAfterConvert(path, data, index, pathArr))) {
-                this.addMessage(path, ListenerMessage('onBeforeConvert'), true);
+                this.addMessage(path, ListenerMessage('onAfterConvert'), true);
             }
         }
 
