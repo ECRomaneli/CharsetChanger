@@ -7,7 +7,7 @@
  */
 export declare function charsetChanger(config: charsetChanger.Config): Promise<void>;
 /**
- * Change charset sync.
+ * Change charset sync (file-by-file).
  * @param config Used to config the CharsetChanger before convert.
  */
 export declare function charsetChangerSync(config: charsetChanger.Config): Promise<void>;
@@ -64,7 +64,7 @@ export declare namespace charsetChanger {
         file: FilePath;
         message: string;
     }[];
-    export type OnFinish = (messageList: MessageList) => boolean | void;
+    export type OnFinish = (status: boolean, messageList: MessageList) => boolean | void;
     export type DetectorFilter = (path: FilePath, charset: Charset) => boolean | void;
     type FilePath = string;
     type GlobString = string;
