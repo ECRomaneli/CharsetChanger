@@ -7,7 +7,7 @@
  */
 export declare function charsetChanger(config: charsetChanger.Config): Promise<void>;
 /**
- * Change charset sync.
+ * Change charset sync (file-by-file).
  * @param config Used to config the CharsetChanger before convert.
  */
 export declare function charsetChangerSync(config: charsetChanger.Config): Promise<void>;

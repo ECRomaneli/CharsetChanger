@@ -11,7 +11,7 @@ export async function charsetChanger(config: charsetChanger.Config): Promise<voi
 }
 
 /**
- * Change charset sync.
+ * Change charset sync (file-by-file).
  * @param config Used to config the CharsetChanger before convert.
  */
 export async function charsetChangerSync(config: charsetChanger.Config): Promise<void> {

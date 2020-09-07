@@ -12,7 +12,7 @@ async function charsetChanger(config) {
 }
 exports.charsetChanger = charsetChanger;
 /**
- * Change charset sync.
+ * Change charset sync (file-by-file).
  * @param config Used to config the CharsetChanger before convert.
  */
 async function charsetChangerSync(config) {

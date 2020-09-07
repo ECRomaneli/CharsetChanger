@@ -16,7 +16,7 @@ The objective of this library is help to solve some charset issues in projects w
 
 ## Install
 
-```
+```npm
 npm i charset-changer
 ```
 
@@ -31,17 +31,19 @@ To use charset-changer directly, import script with this code:
 const { charsetChanger } = require('charset-changer')
 ```
 
-if you want to use sync convertion, use:
+if you want to use sync (file-by-file) convertion, use:
 
 ```typescript
 const { charsetChangerSync } = require('charset-changer')
 ```
 
-**Using**
+If async call are used, the `onFinish` status always will be `true` and you will not be able to cancel conversion with `onAfterConvert`.
+
+### Using
 
 The `charsetChanger` have only one argument, the `CharsetChanger.Config`. Use it to configure the library the way you want. This call will configure and convert the files automaticaly.
 
-**CharsetChanger.Config**
+### CharsetChanger.Config
 ```typescript
     {
         root: string, // root path.
@@ -64,7 +66,8 @@ See the [example here](#async-static-method).
 
 ### Class
 
-**Importing the class**<p/>
+### Importing the class
+
 To use charset-changer, import script with this code:
 
 ```typescript
@@ -73,7 +76,7 @@ const { CharsetChanger } = require('charset-changer') // Uppercase 'C'
 const CharsetChanger = require('charset-changer').Class
 ```
 
-**Using**
+### Methods
 
 Instantiate the class and configure the instance using the `accessors` of the object:
 
@@ -113,8 +116,8 @@ public setConfig(config: CharsetChanger.Config): this;
 To convert you folder (or project) use the convertion classes:
 
 ```typescript
-public async convert(): Promise<boolean>;
-public convertSync(): boolean;
+public convert(): void;
+public async convertSync(): Promise<void>; // use await
 ```
 
 See the [example here](#async-class-method).
@@ -137,6 +140,7 @@ The `iconv-lite` is responsible to the charset decode and encode, so every chars
 The CharsetChanger has an enum with the principal charsets supported **but not limited to that**. The `Charset` enum is disponible into the module.
 
 To use the `Charset` enum import using:
+
 ```typescript
 const { Charset } = require('charset-changer')
 ```
@@ -144,6 +148,7 @@ const { Charset } = require('charset-changer')
 ## Usage Examples
 
 ### Async static method
+
 ```typescript
 const { charsetChangerSync, charsetChanger, Charset } = require('charsetChanger');
 
@@ -159,6 +164,7 @@ charsetChanger({
 ```
 
 ### Async Class Method
+
 ```typescript
 const { CharsetChanger, Charset } = require('charsetChanger');
 
@@ -194,7 +200,8 @@ charsetChanger.setConfig({
 
 See more usages into the [test folder](https://github.com/ECRomaneli/CharsetChanger/blob/master/test).
 
-## Future Project
+## See more
+
 - Create an `electron` app to convert entire projects [separate project].
 
 ## Author
