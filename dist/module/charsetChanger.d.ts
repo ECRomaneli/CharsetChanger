@@ -64,7 +64,7 @@ export declare namespace charsetChanger {
         file: FilePath;
         message: string;
     }[];
-    export type OnFinish = (messageList: MessageList) => boolean | void;
+    export type OnFinish = (status: boolean, messageList: MessageList) => boolean | void;
     export type DetectorFilter = (path: FilePath, charset: Charset) => boolean | void;
     type FilePath = string;
     type GlobString = string;

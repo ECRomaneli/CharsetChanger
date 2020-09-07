@@ -71,7 +71,7 @@ export namespace charsetChanger {
     export type OnBeforeConvert = (path: FilePath, data: string, index: number, pathArr: FilePath[]) => boolean|void;
     export type OnAfterConvert = (path: FilePath, data: string, index: number, pathArr: FilePath[]) => boolean|void;
     export type MessageList = { file: FilePath, message: string }[];
-    export type OnFinish = (messageList: MessageList) => boolean|void;
+    export type OnFinish = (status: boolean, messageList: MessageList) => boolean|void;
     export type DetectorFilter = (path: FilePath, charset: Charset) => boolean|void;
     
     type FilePath = string;
@@ -134,9 +134,9 @@ export namespace charsetChanger {
         constructor () { this._messageList = []; }
 
         private addMessage(filePath: FilePath, message: string, throwErr?: boolean): void {
-            this.Debug.info(message);
             this._messageList.push({file: filePath, message});
             if (throwErr) { throw message; }
+            else { this.Debug.info(message); }
         }
 
         private rootPath(relativePath: FilePath): FilePath {
@@ -216,7 +216,7 @@ export namespace charsetChanger {
             }
 
             if (this.progress === pathArr.length) {
-                this._onFinish(this._messageList);
+                this._onFinish(true, this._messageList);
                 this.Debug.log('Finished.');
             }
         }
@@ -227,7 +227,13 @@ export namespace charsetChanger {
             this.progress = 0;
             for (let i = 0; i < pathArr.length; i++) {
                 if (async) { this.changeCharset(pathArr[i], pathArr); }
-                else { await this.changeCharset(pathArr[i], pathArr); } 
+                else {
+                    await this.changeCharset(pathArr[i], pathArr).catch((err: Error) => {
+                        this._onFinish(false, this._messageList);
+                        this.Debug.log('Finished.');
+                        throw err;
+                    });
+                } 
             }
         }
 

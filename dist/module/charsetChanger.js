@@ -90,10 +90,12 @@ var Charset;
             this._messageList = [];
         }
         addMessage(filePath, message, throwErr) {
-            this.Debug.info(message);
             this._messageList.push({ file: filePath, message });
             if (throwErr) {
                 throw message;
+            }
+            else {
+                this.Debug.info(message);
             }
         }
         rootPath(relativePath) {
@@ -164,7 +166,7 @@ var Charset;
                 this.addMessage(path, ListenerMessage('onAfterConvert'), true);
             }
             if (this.progress === pathArr.length) {
-                this._onFinish(this._messageList);
+                this._onFinish(true, this._messageList);
                 this.Debug.log('Finished.');
             }
         }
@@ -177,7 +179,11 @@ var Charset;
                     this.changeCharset(pathArr[i], pathArr);
                 }
                 else {
-                    await this.changeCharset(pathArr[i], pathArr);
+                    await this.changeCharset(pathArr[i], pathArr).catch((err) => {
+                        this._onFinish(false, this._messageList);
+                        this.Debug.log('Finished.');
+                        throw err;
+                    });
                 }
             }
         }
