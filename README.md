@@ -202,7 +202,7 @@ See more usages into the [test folder](https://github.com/ECRomaneli/CharsetChan
 
 ## See more
 
-- Create an `electron` app to convert entire projects [separate project].
+See [CharsetChanger GUI](https://github.com/ECRomaneli/CharsetChanger-GUI).
 
 ## Author
 
