@@ -10,7 +10,7 @@ export declare function charsetChanger(config: charsetChanger.Config): Promise<v
  * Change charset sync.
  * @param config Used to config the CharsetChanger before convert.
  */
-export declare function charsetChangerSync(config: charsetChanger.Config): void;
+export declare function charsetChangerSync(config: charsetChanger.Config): Promise<void>;
 /**
  * MODULE CORE
  */
@@ -64,7 +64,7 @@ export declare namespace charsetChanger {
         file: FilePath;
         message: string;
     }[];
-    export type OnFinish = (status: boolean, messageList: MessageList) => boolean | void;
+    export type OnFinish = (messageList: MessageList) => boolean | void;
     export type DetectorFilter = (path: FilePath, charset: Charset) => boolean | void;
     type FilePath = string;
     type GlobString = string;
@@ -98,9 +98,9 @@ export declare namespace charsetChanger {
         private backupSuffix;
         private _messageList;
         private _debug;
+        private progress;
         private Debug;
         constructor();
-        private tryConvert;
         private addMessage;
         private rootPath;
         private detectCharset;
@@ -110,8 +110,8 @@ export declare namespace charsetChanger {
         private listFiles;
         private changeCharset;
         private startConvert;
-        convert(): Promise<void>;
-        convertSync(): void;
+        convert(): void;
+        convertSync(): Promise<void>;
         root(): FilePath;
         root(root: FilePath): this;
         search(): GlobString;

@@ -14,8 +14,8 @@ export async function charsetChanger(config: charsetChanger.Config): Promise<voi
  * Change charset sync.
  * @param config Used to config the CharsetChanger before convert.
  */
-export function charsetChangerSync(config: charsetChanger.Config): void {
-    charsetChanger.instance.setConfig(config).convertSync();
+export async function charsetChangerSync(config: charsetChanger.Config): Promise<void> {
+    await charsetChanger.instance.setConfig(config).convertSync();
 }
 
 /**
@@ -71,7 +71,7 @@ export namespace charsetChanger {
     export type OnBeforeConvert = (path: FilePath, data: string, index: number, pathArr: FilePath[]) => boolean|void;
     export type OnAfterConvert = (path: FilePath, data: string, index: number, pathArr: FilePath[]) => boolean|void;
     export type MessageList = { file: FilePath, message: string }[];
-    export type OnFinish = (status: boolean, messageList: MessageList) => boolean|void;
+    export type OnFinish = (messageList: MessageList) => boolean|void;
     export type DetectorFilter = (path: FilePath, charset: Charset) => boolean|void;
     
     type FilePath = string;
@@ -100,6 +100,13 @@ export namespace charsetChanger {
         detectorFilter?: DetectorFilter,
         debug?: boolean
     };
+
+        /**
+         * Convert callback(err, data) to Promise<DataType>.
+         * @param func Function to receive the promise callback.
+         */
+
+    let Async = <T> (func:Function)=>new Promise<T>((r,j)=>func((e:Error,d:T)=>e?j(e):r(d)));
     
     export class Class {
         private _root: string;
@@ -116,6 +123,7 @@ export namespace charsetChanger {
         private backupSuffix: string;
         private _messageList: MessageList;
         private _debug: boolean;
+        private progress: number;
         private Debug = {
             log: (message) => this._debug && debug('log', message),
             info: (message) => this._debug && debug('info', message),
@@ -125,19 +133,9 @@ export namespace charsetChanger {
 
         constructor () { this._messageList = []; }
 
-        private tryConvert(tryFn: Function): void {
-            try {
-                tryFn();
-                this._onFinish(true, this._messageList);
-            } catch(err) {
-                this._onFinish(false, this._messageList);
-                this.Debug.err(err);
-            }
-        }
-
-        private addMessage(file: FilePath, message: string, throwErr?: boolean): void {
+        private addMessage(filePath: FilePath, message: string, throwErr?: boolean): void {
             this.Debug.info(message);
-            this._messageList.push({file, message});
+            this._messageList.push({file: filePath, message});
             if (throwErr) { throw message; }
         }
 
@@ -161,18 +159,22 @@ export namespace charsetChanger {
             return null;
         }
 
-        private getDecodedData(path: FilePath): string {
+        private async getDecodedData(path: FilePath): Promise<string> {
             this.Debug.log('Getting decoded data...');
-            let fileBuffer: Buffer = fs.readFileSync(this.rootPath(path));
+            let fileBuffer: Buffer = await Async((cb: Function) => fs.readFile(this.rootPath(path), cb));
             let from: Charset = this._from || this.detectCharset(path, fileBuffer);
             this.Debug.info(`Charset: ${from};`);
             return from ? iconv.decode(fileBuffer, from) : null;
         }
 
-        private setEncodedData(path: FilePath, data: string): void {
+        private async setEncodedData(path: FilePath, data: string) {
             this.Debug.log('Setting encoded data...');
             this.Debug.info(`Charset: ${this._to};`);
-            fs.writeFileSync(this.rootPath(path), iconv.encode(data, this._to));
+            await Async((cb: Function) => fs.writeFile(
+                this.rootPath(path), 
+                iconv.encode(data, this._to), 
+                cb
+            ));
         }
 
         private createBackup(path: FilePath): void {
@@ -197,37 +199,44 @@ export namespace charsetChanger {
             return pathArr;
         }
 
-        private changeCharset(path: FilePath, index?: number, pathArr?: FilePath[]): void {
-            let data: string = this.getDecodedData(path);
+        private async changeCharset(path: FilePath, pathArr?: FilePath[]) {
+            let data: string = await this.getDecodedData(path);
             if (data === null) { return; }
 
-            if (not(this._onBeforeConvert(path, data, index, pathArr))) {
+            if (not(this._onBeforeConvert(path, data, this.progress, pathArr))) {
                 return this.addMessage(path, ListenerMessage('onBeforeConvert'));
             }
             
             this.createBackup(path);
-            this.setEncodedData(path, data);
+            await this.setEncodedData(path, data);
+            this.progress++;
 
-            if (not(this._onAfterConvert(path, data, index, pathArr))) {
-                this.addMessage(path, ListenerMessage('onBeforeConvert'), true);
+            if (not(this._onAfterConvert(path, data, this.progress, pathArr))) {
+                this.addMessage(path, ListenerMessage('onAfterConvert'), true);
+            }
+
+            if (this.progress === pathArr.length) {
+                this._onFinish(this._messageList);
+                this.Debug.log('Finished.');
             }
         }
 
-        private startConvert(): void {
-            this.tryConvert(() => {
-                this.Debug.log('Try converting...');
-                this.listFiles().forEach((f,i,arr) => this.changeCharset(f,i,arr));
-                this.Debug.log('Finished.');
-            });
+        private async startConvert(async: boolean) {
+            this.Debug.log('Try converting...');
+            let pathArr: string[] = this.listFiles();
+            this.progress = 0;
+            for (let i = 0; i < pathArr.length; i++) {
+                if (async) { this.changeCharset(pathArr[i], pathArr); }
+                else { await this.changeCharset(pathArr[i], pathArr); } 
+            }
         }
 
-        public async convert(): Promise<void> {
-            setTimeout(() => this.startConvert(), 0);
-            return;
+        public convert(): void {
+            this.startConvert(true);
         }
 
-        public convertSync(): void {
-            this.startConvert();
+        public async convertSync(): Promise<void> {
+            await this.startConvert(false);
         }
 
         public root(): FilePath;
