@@ -15,8 +15,8 @@ exports.charsetChanger = charsetChanger;
  * Change charset sync.
  * @param config Used to config the CharsetChanger before convert.
  */
-function charsetChangerSync(config) {
-    charsetChanger.instance.setConfig(config).convertSync();
+async function charsetChangerSync(config) {
+    await charsetChanger.instance.setConfig(config).convertSync();
 }
 exports.charsetChangerSync = charsetChangerSync;
 /**
@@ -74,6 +74,11 @@ var Charset;
     const DEFAULT_BACKUP_SUFFIX = '.bkp';
     const DEFAULT_LISTENER = () => { };
     const MAX_SAMPLE_SIZE = 200000;
+    /**
+     * Convert callback(err, data) to Promise<DataType>.
+     * @param func Function to receive the promise callback.
+     */
+    let Async = (func) => new Promise((r, j) => func((e, d) => e ? j(e) : r(d)));
     class Class {
         constructor() {
             this.Debug = {
@@ -84,19 +89,9 @@ var Charset;
             };
             this._messageList = [];
         }
-        tryConvert(tryFn) {
-            try {
-                tryFn();
-                this._onFinish(true, this._messageList);
-            }
-            catch (err) {
-                this._onFinish(false, this._messageList);
-                this.Debug.err(err);
-            }
-        }
-        addMessage(file, message, throwErr) {
+        addMessage(filePath, message, throwErr) {
             this.Debug.info(message);
-            this._messageList.push({ file, message });
+            this._messageList.push({ file: filePath, message });
             if (throwErr) {
                 throw message;
             }
@@ -123,17 +118,17 @@ var Charset;
             }
             return null;
         }
-        getDecodedData(path) {
+        async getDecodedData(path) {
             this.Debug.log('Getting decoded data...');
-            let fileBuffer = fs.readFileSync(this.rootPath(path));
+            let fileBuffer = await Async((cb) => fs.readFile(this.rootPath(path), cb));
             let from = this._from || this.detectCharset(path, fileBuffer);
             this.Debug.info(`Charset: ${from};`);
             return from ? iconv.decode(fileBuffer, from) : null;
         }
-        setEncodedData(path, data) {
+        async setEncodedData(path, data) {
             this.Debug.log('Setting encoded data...');
             this.Debug.info(`Charset: ${this._to};`);
-            fs.writeFileSync(this.rootPath(path), iconv.encode(data, this._to));
+            await Async((cb) => fs.writeFile(this.rootPath(path), iconv.encode(data, this._to), cb));
         }
         createBackup(path) {
             if (this._createBackup) {
@@ -154,33 +149,43 @@ var Charset;
             }
             return pathArr;
         }
-        changeCharset(path, index, pathArr) {
-            let data = this.getDecodedData(path);
+        async changeCharset(path, pathArr) {
+            let data = await this.getDecodedData(path);
             if (data === null) {
                 return;
             }
-            if (not(this._onBeforeConvert(path, data, index, pathArr))) {
+            if (not(this._onBeforeConvert(path, data, this.progress, pathArr))) {
                 return this.addMessage(path, ListenerMessage('onBeforeConvert'));
             }
             this.createBackup(path);
-            this.setEncodedData(path, data);
-            if (not(this._onAfterConvert(path, data, index, pathArr))) {
-                this.addMessage(path, ListenerMessage('onBeforeConvert'), true);
+            await this.setEncodedData(path, data);
+            this.progress++;
+            if (not(this._onAfterConvert(path, data, this.progress, pathArr))) {
+                this.addMessage(path, ListenerMessage('onAfterConvert'), true);
+            }
+            if (this.progress === pathArr.length) {
+                this._onFinish(this._messageList);
+                this.Debug.log('Finished.');
             }
         }
-        startConvert() {
-            this.tryConvert(() => {
-                this.Debug.log('Try converting...');
-                this.listFiles().forEach((f, i, arr) => this.changeCharset(f, i, arr));
-                this.Debug.log('Finished.');
-            });
+        async startConvert(async) {
+            this.Debug.log('Try converting...');
+            let pathArr = this.listFiles();
+            this.progress = 0;
+            for (let i = 0; i < pathArr.length; i++) {
+                if (async) {
+                    this.changeCharset(pathArr[i], pathArr);
+                }
+                else {
+                    await this.changeCharset(pathArr[i], pathArr);
+                }
+            }
         }
-        async convert() {
-            setTimeout(() => this.startConvert(), 0);
-            return;
+        convert() {
+            this.startConvert(true);
         }
-        convertSync() {
-            this.startConvert();
+        async convertSync() {
+            await this.startConvert(false);
         }
         root(root) {
             if (root === void 0) {
