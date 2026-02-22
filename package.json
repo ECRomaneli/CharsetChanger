@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "chardet": "0.8.0",
-    "glob": "^7.1.6",
+    "glob": "^13.0.6",
     "iconv-lite": "0.5.1"
   },
   "devDependencies": {
